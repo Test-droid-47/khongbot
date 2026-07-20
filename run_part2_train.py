@@ -163,6 +163,15 @@ class TrainingPipeline:
             self.stats['regime_fitted'] = True
             logger.info("Regime probabilities added.")
 
+            # Fix: If GMM outputs columns named 'regime_0', 'regime_1', etc., rename them to 'regime_p_0'
+            for df in [df_train_feats, df_val_feats]:
+                rename_dict = {}
+                for i in range(4):
+                    if f'regime_{i}' in df.columns and f'regime_p_{i}' not in df.columns:
+                        rename_dict[f'regime_{i}'] = f'regime_p_{i}'
+                if rename_dict:
+                    df.rename(columns=rename_dict, inplace=True)
+
             logger.info("Converting 'regime' to one-hot dummies...")
             for df in [df_train_feats, df_val_feats]:
                 if 'regime' in df.columns:
@@ -179,6 +188,13 @@ class TrainingPipeline:
             if 'timestamp' in all_cols:
                 all_cols.remove('timestamp')
             final_features = [c for c in all_cols if c != 'close']
+
+            # Fix: Forcefully ensure 'regime_p_0' to 'regime_p_3' are present in final_features list if they exist in df
+            for i in range(4):
+                p_col = f'regime_p_{i}'
+                if p_col in df_train_feats.columns and p_col not in final_features:
+                    final_features.append(p_col)
+
             self.stats['feature_count'] = len(final_features)
             logger.info(f"Total features (excluding 'close'): {len(final_features)}")
 
@@ -378,3 +394,4 @@ def main():
 
 if __name__ == '__main__':
     exit(main())
+            
