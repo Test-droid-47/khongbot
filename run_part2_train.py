@@ -163,15 +163,6 @@ class TrainingPipeline:
             self.stats['regime_fitted'] = True
             logger.info("Regime probabilities added.")
 
-            # Fix: If GMM outputs columns named 'regime_0', 'regime_1', etc., rename them to 'regime_p_0'
-            for df in [df_train_feats, df_val_feats]:
-                rename_dict = {}
-                for i in range(4):
-                    if f'regime_{i}' in df.columns and f'regime_p_{i}' not in df.columns:
-                        rename_dict[f'regime_{i}'] = f'regime_p_{i}'
-                if rename_dict:
-                    df.rename(columns=rename_dict, inplace=True)
-
             logger.info("Converting 'regime' to one-hot dummies...")
             for df in [df_train_feats, df_val_feats]:
                 if 'regime' in df.columns:
@@ -184,17 +175,20 @@ class TrainingPipeline:
                     df_val_feats = df
             logger.info("Regime one-hot columns added.")
 
+            # --- BULLETPROOF FIX FOR THE VALUEERROR ---
+            for df in [df_train_feats, df_val_feats]:
+                for i in range(4):
+                    p_col = f'regime_p_{i}'
+                    r_col = f'regime_{i}'
+                    if r_col in df.columns:
+                        df[p_col] = df[r_col].astype(np.float32)
+                    elif p_col not in df.columns:
+                        df[p_col] = 0.0
+
             all_cols = df_train_feats.select_dtypes(include=[np.number]).columns.tolist()
             if 'timestamp' in all_cols:
                 all_cols.remove('timestamp')
             final_features = [c for c in all_cols if c != 'close']
-
-            # Fix: Forcefully ensure 'regime_p_0' to 'regime_p_3' are present in final_features list if they exist in df
-            for i in range(4):
-                p_col = f'regime_p_{i}'
-                if p_col in df_train_feats.columns and p_col not in final_features:
-                    final_features.append(p_col)
-
             self.stats['feature_count'] = len(final_features)
             logger.info(f"Total features (excluding 'close'): {len(final_features)}")
 
@@ -365,16 +359,6 @@ class TrainingPipeline:
             logger.info("=" * 70)
             logger.info("PART 2 – TRAINING COMPLETED SUCCESSFULLY")
             logger.info("=" * 70)
-            logger.info(f"Duration:        {self.stats['duration_seconds']} sec")
-            logger.info(f"OHLCV bars:    {self.stats['ohlcv_bars']}")
-            logger.info(f"Features:      {self.stats['feature_count']}")
-            logger.info(f"Embedding dim: {self.stats['embedding_dim']}")
-            logger.info(f"LSTM trained:  {self.stats['lstm_trained']}")
-            logger.info(f"Ensembles:     {self.stats['ensemble_trained']}")
-            logger.info(f"PPO trained:   {self.stats['ppo_trained']}")
-            logger.info(f"Regime fitted: {self.stats['regime_fitted']}")
-            logger.info("=" * 70)
-
             return self.stats
 
         except Exception as e:
@@ -394,4 +378,4 @@ def main():
 
 if __name__ == '__main__':
     exit(main())
-            
+                    
