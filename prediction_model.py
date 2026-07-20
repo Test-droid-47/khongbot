@@ -210,7 +210,7 @@ class PredictionModel:
 
         data = numeric_df[feature_cols].copy().replace([np.inf, -np.inf], np.nan).ffill().fillna(0.0)
 
-        self._feature_cols = [c for c in feature_cols if c != 'close']
+        self._feature_cols = [c for c in self.feature_cols if c in all_cat_cols or c in valid_cont_cols]
         all_cat_cols = [c for c in self._feature_cols if c.startswith('regime_') or 'trigger' in c.lower()]
         all_cont_cols = [c for c in self._feature_cols if c not in all_cat_cols]
         
