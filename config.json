@@ -48,11 +48,13 @@
     "gmm_components": 4,
     "regime_map_path": "models/regime_label_map.json",
     "regime_features": [
-        "vol_regime_score",
+        "amihud_illiq",
         "efficiency_ratio_20",
+        "hurst_exp",
+        "wavelet_hf_ratio",
         "natr",
-        "perm_entropy",
-        "vol_of_vol"
+        "vpin",
+        "ou_half_life"
     ],
     "initial_capital": 1000,
     "fee_rate": 0.004,
