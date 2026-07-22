@@ -12,7 +12,7 @@ from typing import Dict, List, Optional, Tuple, Any
 from tqdm import tqdm
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] ='2'
-warnings.filterwarnings('ignore', message='Gradients do not exist'
+warnings.filterwarnings('ignore', message='Gradients do not exist')
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
