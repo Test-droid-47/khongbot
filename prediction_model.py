@@ -167,8 +167,10 @@ class PredictionModel:
         if feature_cols is None:
             feature_cols = [c for c in numeric_df.columns if c not in ['timestamp']]
         else:
-            new_regime_cols = [c for c in numeric_df.columns if c.startswith('regime_')]
-            feature_cols = [c for c in feature_cols if c in numeric_df.columns] + new_regime_cols
+            missing = [c for c in feature_cols if c not in numeric_df.columns]
+            if missing:
+                raise KeyError(f"features not in DataFrame: {missing}")
+            feature_cols = [c for c in feature_cols if c in numeric_df.columns]
 
         if 'close' not in numeric_df.columns:
             raise ValueError("DataFrame must contain 'close' column for target engineering.")
