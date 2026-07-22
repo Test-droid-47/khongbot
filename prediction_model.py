@@ -203,7 +203,7 @@ class PredictionModel:
 
         scaled = data[self._feature_cols].values.astype(np.float32)
         cont_indices_in_features = [self._feature_cols.index(c) for c in all_cont_cols]
-        scaled[:, cont_indices_in_features] = self.scaler.transform(data[all_cont_cols])
+        scaled[:, [self._feature_cols.index(c) for c in all_cont_cols]] = self.scaler.transform(data[all_cont_cols])
 
         aux_targets = self._engineer_auxiliary_targets(df, self.horizons, self.envelope_horizon)
         y_returns = aux_targets['returns'].astype(np.float32)
