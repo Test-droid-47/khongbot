@@ -299,19 +299,7 @@ class TrainingPipeline:
                 print("[PPO] Training meta-learner (12-D state)...")
                 env = TradingEnvironment(self.config, expert_ensemble=expert_ensemble)
 
-                all_cat_cols = [c for c in DEEP_FEATURES if c.startswith('regime_p_')]
-                all_cont_cols = [c for c in DEEP_FEATURES if c not in all_cat_cols]
-
-                df_train_scaled_ctx = df_train_feats.copy()
-                if len(all_cont_cols) > 0:
-                    df_train_scaled_ctx[all_cont_cols] = lstm_model.scaler.transform(
-                        df_train_feats[all_cont_cols].values
-                    )
-
-                state_features = DEEP_FEATURES
-                scaled_train = df_train_scaled_ctx[state_features].values.astype(np.float32)
-
-                env.reset(df_train_feats, scaled_train, close_idx=-1)
+                env.reset(df_train_feats, None, close_idx=-1)
 
                 ppo = PPOAgent(self.config, state_dim=12)
                 ppo.train(env, n_episodes=self.config.get('rl_n_episodes', 200))
