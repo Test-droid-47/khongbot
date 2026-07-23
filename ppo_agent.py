@@ -221,7 +221,7 @@ class PPOAgent:
             
             if ep % 25 == 0 and self.verbose:
                 avg_reward = np.mean(rewards_history[-25:])
-                print(f"  EP {ep:4d}/{n_ep} | R={avg_reward:+.4f} | A={a_loss:.4f} C={c_loss:.4f}")
+                print(f"  EP {ep:4d}/{n_ep} | R={avg_reward:+.4f} | A={a_loss:.4f} C={c_loss:.4f} | Invalid={stats['invalid_scalling_attempts']} | Trades={stats['total_trades']} | WR={stats['win_rate']:.2f}")
             
             if ep >= 100 and no_improve >= 50:
                 if self.verbose:
