@@ -86,7 +86,7 @@ class TrainingPipeline:
             'max_risk_per_trade': 0.02,
             'max_position_pct': 0.5,
             'drawdown_penalty': 2.0,
-            'trading_mode': 'spot',
+            'trading_mode': 'future',
             'leverage': 10,
             'stop_loss_pct': 0.02,
             'take_profit_pct': 0.03,
@@ -208,10 +208,18 @@ class TrainingPipeline:
                 df_slice = df_feats.iloc[-n:].copy()
 
                 future_ret = (df_slice['close'].shift(-1) / df_slice['close']) - 1
+                next_high = df_slice['high'].shift(-1).values
+                next_low = df_slice['low'].shift(-1).values
+                current_close = df_slice['close'].values
+
+                long_trigger = (next_high / current_close) > 1.003
+                short_trigger = (next_low / current_close) < 0.997
+
+                
                 direction = np.zeros(n, dtype=np.float32)
-                direction[future_ret > 0.005] = 2.0
-                direction[future_ret < -0.005] = 0.0
-                direction[(future_ret >= -0.005) & (future_ret <= 0.005)] = 1.0
+                direction[long_trigger & ~short_trigger] = 2.0
+                direction[short_trigger & ~long_trigger] = 0.0
+                direction[(long_trigger & short_trigger) | (~long_trigger & ~short_trigger)] = 1.0
                 y_dict['direction'] = np.nan_to_num(direction, nan=1.0)
 
                 y_dict['price_pred'] = future_ret.fillna(0).values.astype(np.float32)
