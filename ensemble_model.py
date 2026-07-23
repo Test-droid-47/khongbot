@@ -187,7 +187,7 @@ class ExpertModel:
         self._trained = self.xgb_model is not None or self.lgb_model is not None
         if self._trained:
             self._update_weights(X_val, y_val)
-            if is_classification and self.trained and self.task_name == 'direction':
+            if is_classification and self._trained and self.task_name == 'direction':
                 valid_mask = ~np.isnan(y_val)
                 if np.sum(valid_mask) > 0:
                     y_val_clean = y_val[valid_mask]
