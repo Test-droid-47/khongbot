@@ -4,6 +4,7 @@ import pandas as pd
 import joblib
 from typing import Dict, List, Optional, Tuple, Any
 from sklearn.preprocessing import RobustScaler
+from sklearn.metrics import classification_report, confusion_matrix
 
 try:
     import xgboost as xgb
@@ -186,6 +187,22 @@ class ExpertModel:
         self._trained = self.xgb_model is not None or self.lgb_model is not None
         if self._trained:
             self._update_weights(X_val, y_val)
+            if is_classification and self.trained and self.task_name == 'direction':
+                valid_mask = ~np.isnan(y_val)
+                if np.sum(valid_mask) > 0:
+                    y_val_clean = y_val[valid_mask]
+                    X_val_clean = X_val[valid_mask]
+                    y_pred_proba = self.predict(X_val_clean)
+                    if y_pred_proba.ndim > 1 and y_pred_proba.shape[1] > 1:
+                        y_pred = np.argmax(y_pred_proba, axis=1)
+                    else:
+                        y_pred = (y_pred_proba > 0.5).astype(int)
+                    print(f"\n[{self.task_name}] Confusion Matrix:")
+                    print(confusion_matrix(y_val_clean, y_pred))
+                    print(f"\n[{self.task_name}] Classification Report:")
+                    print(classification_report(y_val_clean, y_pred, target_names = ['short', 'Nuteral', 'Long']))
+                    
+                    
 
     def _update_weights(self, X_val: np.ndarray, y_val: np.ndarray) -> None:
         model_accs = {}
